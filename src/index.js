@@ -16,16 +16,19 @@ export const refs = {
 let currentPage = 1; 
 let currentValue = '';
 let isNextPageLoad = false;
-
 const onFormSubmit = (e) => {
   e.preventDefault();
   const inputValue = refs.inputEl.value.trim();
+  currentPage = 1;
+  
   currentValue = inputValue;
   refs.galleryEl.textContent = '';
-  isNextPageLoad = false;
+  
   performSearch(currentValue);
+  
   e.currentTarget.reset();
 };
+
 
 const performSearch = (inputValue) => {
   fetchPics(inputValue, currentPage)
@@ -35,7 +38,7 @@ const performSearch = (inputValue) => {
         Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
       } else if (data.hits.length === 0) {
         Notiflix.Notify.failure("Sorry, there are no images matching your search query. Please try again.");
-      } else if (!isNextPageLoad) {
+      } else if (!isNextPageLoad && currentPage === 1 ) {
         galleryMarkup(data);
         Notiflix.Notify.info(`Hooray! We found ${data.totalHits} images.`);
         galleryLightbox.refresh();
