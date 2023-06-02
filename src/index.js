@@ -30,7 +30,7 @@ const onFormSubmit = (e) => {
 const performSearch = (inputValue) => {
   fetchPics(inputValue, currentPage)
     .then((data) => {
-      if (currentPage === Math.ceil(data.totalHits / 3)) {
+      if (currentPage === Math.ceil(data.totalHits / 40)) {
         observer.unobserve(refs.observer);
         Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
       } else if (data.hits.length === 0) {
@@ -77,9 +77,9 @@ const galleryLightbox = new SimpleLightbox('.gallery a', optionsEl);
 const scrollToNextGroup = () => {
   const { height: cardHeight } = refs.galleryEl.firstElementChild.getBoundingClientRect();
   window.scrollBy({
-    top: cardHeight * 2,
-    behavior: "smooth",
-  });
+  top: cardHeight * 2,
+  behavior: "smooth",
+});
 };
 
 refs.formEl.addEventListener('submit', onFormSubmit);
