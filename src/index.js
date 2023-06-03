@@ -16,6 +16,9 @@ export const refs = {
 let currentPage = 1;
 let currentValue = '';
 let isNextPageLoad = false;
+let isLastBatchLoaded = false;
+let totalHits = 0;
+
 const onFormSubmit = (e) => {
   e.preventDefault();
   const inputValue = refs.inputEl.value.trim();
@@ -26,6 +29,7 @@ const onFormSubmit = (e) => {
   currentValue = inputValue;
   refs.galleryEl.textContent = '';
   isNextPageLoad = false;
+  isLastBatchLoaded = false;
 
   performSearch(currentValue);
 
@@ -35,29 +39,43 @@ const onFormSubmit = (e) => {
 const performSearch = (inputValue) => {
   fetchPics(inputValue, currentPage)
     .then((data) => {
-      if (currentPage === Math.ceil(data.totalHits / 40)) {
-        observer.unobserve(refs.observer);
-        Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
-      } else if (data.hits.length === 0) {
-        Notiflix.Notify.failure("Sorry, there are no images matching your search query. Please try again.");
-      } else if (!isNextPageLoad && currentPage === 1) {
-        galleryMarkup(data);
-        Notiflix.Notify.info(`Hooray! We found ${data.totalHits} images.`);
-        galleryLightbox.refresh();
-        observer.observe(refs.observer);
-        scrollToNextGroup();
-      } else if (isNextPageLoad) {
-        galleryMarkup(data);
-        galleryLightbox.refresh();
-        observer.observe(refs.observer);
-        scrollToNextGroup();
+      if (data.hits.length === 0) {
+        Notiflix.Notify.failure("Вибачте, немає зображень, що відповідають вашому запиту. Будь ласка, спробуйте ще раз.");
+        return;
       }
-      isNextPageLoad = false;
+
+      if (!isNextPageLoad && currentPage === 1) {
+        totalHits = data.totalHits;
+        Notiflix.Notify.info(`Ура! Ми знайшли ${totalHits} зображень.`);
+      }
+
+      galleryMarkup(data);
+      galleryLightbox.refresh();
+      observer.observe(refs.observer);
+      scrollToNextGroup();
+
+      if (isLastBatchLoaded) {
+        observer.unobserve(refs.observer);
+        Notiflix.Notify.info("Ви досягли кінця результатів пошуку.");
+        return;
+      }
+
+      if (currentPage * 40 < totalHits) {
+        currentPage++;
+        isNextPageLoad = true;
+      } else {
+        isLastBatchLoaded = true;
+        Notiflix.Notify.info("Ви досягли кінця результатів пошуку.");
+      }
     })
     .catch((error) => {
       console.error(error.message);
+    })
+    .finally(() => {
+      isNextPageLoad = false;
     });
 };
+
 
 const options = {
   root: null,
@@ -67,9 +85,7 @@ const options = {
 
 const onLoadMore = (entries) => {
   entries.forEach((entry) => {
-    if (entry.isIntersecting && !isNextPageLoad) {
-      currentPage++;
-      isNextPageLoad = true;
+    if (entry.isIntersecting && !isNextPageLoad && !isLastBatchLoaded) {
       performSearch(currentValue);
     }
   });
@@ -82,6 +98,7 @@ const galleryLightbox = new SimpleLightbox('.gallery a', optionsEl);
 
 const scrollToNextGroup = () => {
   const { height: cardHeight } = refs.galleryEl.firstElementChild.getBoundingClientRect();
+
   window.scrollBy({
     top: cardHeight * 2,
     behavior: "smooth",
