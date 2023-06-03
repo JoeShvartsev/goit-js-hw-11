@@ -55,6 +55,5 @@ const handleImageClick = (event) => {
   event.preventDefault();
   const imageSource = event.currentTarget.getAttribute('href');
   const imageTitle = event.currentTarget.querySelector('img').getAttribute('title');
-  
-  // Виклик функції або показ попапу з великим зображенням і його описом
+
 };
