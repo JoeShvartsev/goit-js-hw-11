@@ -1,7 +1,4 @@
 import { refs } from "./index.js";
-
-import { refs } from "./index.js";
-
 export const galleryMarkup = (data) => {
   const galleryItems = data.hits.map((picture) => `
     <div class="photo-card">
@@ -50,7 +47,6 @@ export const galleryMarkup = (data) => {
     link.addEventListener('click', handleImageClick);
   });
 };
-
 const handleImageClick = (event) => {
   event.preventDefault();
   const imageSource = event.currentTarget.getAttribute('href');
