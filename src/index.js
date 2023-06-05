@@ -25,14 +25,15 @@ const onFormSubmit = (e) => {
   if (inputValue === '') {
     return;
   }
+  
   currentPage = 1;
+  refs.galleryEl.innerHTML = ''; 
+  
   currentValue = inputValue;
-  refs.galleryEl.textContent = '';
   isNextPageLoad = false;
   isLastBatchLoaded = false;
 
   performSearch(currentValue);
-
   e.currentTarget.reset();
 };
 
@@ -46,6 +47,7 @@ const performSearch = async (inputValue) => {
     }
 
     if (!isNextPageLoad && currentPage === 1) {
+      
       totalHits = data.totalHits;
       Notiflix.Notify.info(`Ура! Ми знайшли ${totalHits} зображень.`);
     }
