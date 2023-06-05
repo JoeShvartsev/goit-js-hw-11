@@ -6,7 +6,7 @@ import { fetchPics } from "./fetch";
 
 export const refs = {
   formEl: document.querySelector('.search-form'),
-  buttonEl: document.querySelector('.submit'),
+  submitEl: document.querySelector('.submit'), // Змінено назву властивості
   galleryEl: document.querySelector('.gallery'),
   inputEl: document.querySelector('input[name="searchQuery"]'),
   observer: document.querySelector('.observer'),
@@ -36,45 +36,42 @@ const onFormSubmit = (e) => {
   e.currentTarget.reset();
 };
 
-const performSearch = (inputValue) => {
-  fetchPics(inputValue, currentPage)
-    .then((data) => {
-      if (data.hits.length === 0) {
-        Notiflix.Notify.failure("Вибачте, немає зображень, що відповідають вашому запиту. Будь ласка, спробуйте ще раз.");
-        return;
-      }
+const performSearch = async (inputValue) => {
+  try {
+    const data = await fetchPics(inputValue, currentPage);
 
-      if (!isNextPageLoad && currentPage === 1) {
-        totalHits = data.totalHits;
-        Notiflix.Notify.info(`Ура! Ми знайшли ${totalHits} зображень.`);
-      }
+    if (data.hits.length === 0) {
+      Notiflix.Notify.failure("Вибачте, немає зображень, що відповідають вашому запиту. Будь ласка, спробуйте ще раз.");
+      return;
+    }
 
-      galleryMarkup(data);
-      galleryLightbox.refresh();
-      observer.observe(refs.observer);
-      scrollToNextGroup();
+    if (!isNextPageLoad && currentPage === 1) {
+      totalHits = data.totalHits;
+      Notiflix.Notify.info(`Ура! Ми знайшли ${totalHits} зображень.`);
+    }
 
-      if (isLastBatchLoaded) {
-        observer.unobserve(refs.observer);
-        Notiflix.Notify.info("Ви досягли кінця результатів пошуку.");
-        return;
-      }
+    galleryMarkup(data);
+    galleryLightbox.refresh();
+    observer.observe(refs.observer);
+    scrollToNextGroup();
 
-      if (currentPage * 40 < totalHits) {
-        currentPage++;
-        isNextPageLoad = true;
-      } else {
-        isLastBatchLoaded = true;
+    if (currentPage * 40 < totalHits) {
+      currentPage++;
+      isNextPageLoad = true;
+    } else {
+      isLastBatchLoaded = true;
+      if (currentPage > 1) {
         Notiflix.Notify.info("Ви досягли кінця результатів пошуку.");
       }
-    })
-    .catch((error) => {
-      console.error(error.message);
-    })
-    .finally(() => {
-      isNextPageLoad = false;
-    });
+    }
+  } catch (error) {
+    console.error(error.message);
+  } finally {
+    isNextPageLoad = false;
+  }
 };
+
+
 
 
 const options = {

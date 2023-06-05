@@ -47,6 +47,7 @@ export const galleryMarkup = (data) => {
     link.addEventListener('click', handleImageClick);
   });
 };
+
 const handleImageClick = (event) => {
   event.preventDefault();
   const imageSource = event.currentTarget.getAttribute('href');
